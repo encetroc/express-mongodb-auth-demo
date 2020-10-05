@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const bcrypt = require('bcryptjs')
-const {registerValidator} = require('../validation')
+const jwt = require('jsonwebtoken')
+const {registerValidator, loginValidator} = require('../validation')
 const User = require('../models/User')
 
 router.post('/register', registerValidator, async (req, res) => {
@@ -15,6 +16,13 @@ router.post('/register', registerValidator, async (req, res) => {
     } catch (err) {
         res.status('400').send(err)
     }
+})
+
+router.post('/login', loginValidator, async (req, res) => {
+    const user = await User.findOne({email: req.body.email})
+    const token = await jwt.sign({_id: user._id}, process.env.TOKEN_SECRET)
+
+    res.header('token', token).send(token)
 })
 
 module.exports = router
